@@ -1,5 +1,5 @@
 GAME_KEY = "ludo"
-GAME_NAME = "Ludo Mini"
+GAME_NAME = "Ludo"
 
 def render_page(base_url: str) -> str:
     return f"""
@@ -32,38 +32,32 @@ def render_page(base_url: str) -> str:
     }}
     .grid {{
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(15, 1fr);
+      gap: 4px;
       margin-top: 16px;
     }}
     .cell {{
       aspect-ratio: 1 / 1;
-      border-radius: 14px;
+      border-radius: 8px;
       background: #1e293b;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      min-height: 54px;
-      position: relative;
+      font-size: 12px;
       overflow: hidden;
     }}
-    .chip {{
-      font-size: 12px;
-      background: rgba(255,255,255,.1);
-      padding: 2px 6px;
-      border-radius: 999px;
-      margin: 2px;
-      display: inline-block;
+    .center {{
+      background: #334155;
+      color: white;
+      font-weight: 700;
     }}
     .controls {{
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       margin-top: 14px;
-      align-items: center;
     }}
-    button, .btn {{
+    .btn {{
       padding: 12px 16px;
       border-radius: 12px;
       border: 0;
@@ -83,20 +77,12 @@ def render_page(base_url: str) -> str:
       color: #cbd5e1;
       min-height: 24px;
     }}
-    .legend {{
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 12px;
-      color: #cbd5e1;
-      font-size: 14px;
-    }}
     .dot {{
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
       display: inline-block;
-      margin-right: 6px;
+      margin: 2px;
     }}
   </style>
 </head>
@@ -104,58 +90,58 @@ def render_page(base_url: str) -> str:
   <div class="wrap">
     <div class="card">
       <h1>{GAME_NAME}</h1>
-      <div>A simple browser race game inspired by Ludo</div>
+      <div>Simple Ludo-style starter board</div>
 
       <div class="controls">
-        <button onclick="rollDice()">Roll Dice</button>
-        <button class="secondary" onclick="resetGame()">Reset</button>
+        <button class="btn" onclick="rollDice()">Roll Dice</button>
+        <button class="btn secondary" onclick="resetGame()">Reset</button>
         <a class="btn" href="{base_url}/play">Back to games</a>
         <a class="btn" href="{base_url}/">Bot home</a>
       </div>
 
-      <div id="status" class="status">Red starts</div>
+      <div id="status" class="status">Red turn</div>
       <div id="dice" class="status">Dice: -</div>
-
-      <div class="legend">
-        <div><span class="dot" style="background:#ef4444"></span>Red</div>
-        <div><span class="dot" style="background:#3b82f6"></span>Blue</div>
-        <div><span class="dot" style="background:#22c55e"></span>Green</div>
-        <div><span class="dot" style="background:#f59e0b"></span>Yellow</div>
-      </div>
 
       <div id="grid" class="grid"></div>
     </div>
   </div>
 
   <script>
+    const grid = document.getElementById("grid");
+    const statusEl = document.getElementById("status");
+    const diceEl = document.getElementById("dice");
+
     const players = [
-      {{ name: "Red", color: "#ef4444", pos: 0 }},
-      {{ name: "Blue", color: "#3b82f6", pos: 0 }},
-      {{ name: "Green", color: "#22c55e", pos: 0 }},
-      {{ name: "Yellow", color: "#f59e0b", pos: 0 }},
+      {{ name: "R", color: "#ef4444", pos: 0 }},
+      {{ name: "B", color: "#3b82f6", pos: 0 }},
+      {{ name: "G", color: "#22c55e", pos: 0 }},
+      {{ name: "Y", color: "#f59e0b", pos: 0 }},
     ];
 
     let turn = 0;
     let finished = false;
 
-    const grid = document.getElementById("grid");
-    const statusEl = document.getElementById("status");
-    const diceEl = document.getElementById("dice");
-
     function render() {{
       grid.innerHTML = "";
-      for (let i = 0; i <= 30; i++) {{
+      for (let i = 0; i < 225; i++) {{
         const cell = document.createElement("div");
         cell.className = "cell";
-        cell.textContent = i;
+        cell.textContent = i < 15 ? i + 1 : "";
+
+        if (i === 112) {{
+          cell.className += " center";
+          cell.textContent = "START";
+        }}
 
         const here = players.filter(p => p.pos === i);
         if (here.length) {{
-          cell.innerHTML = here.map(p => `<span class="chip">${{p.name}}</span>`).join("");
+          cell.innerHTML = here.map(p => `<span class="dot" style="background:${{p.color}}"></span>`).join("");
         }}
+
         grid.appendChild(cell);
       }}
-      statusEl.textContent = finished ? "Game finished." : `${{players[turn].name}} turn`;
+
+      statusEl.textContent = finished ? "Game finished" : `${{players[turn].name}} turn`;
     }}
 
     function rollDice() {{
@@ -164,9 +150,9 @@ def render_page(base_url: str) -> str:
       diceEl.textContent = "Dice: " + dice;
 
       const p = players[turn];
-      p.pos = Math.min(30, p.pos + dice);
+      p.pos = Math.min(224, p.pos + dice);
 
-      if (p.pos >= 30) {{
+      if (p.pos >= 224) {{
         finished = true;
         statusEl.textContent = p.name + " wins!";
       }} else {{
