@@ -5,14 +5,14 @@ GAME_REGISTRY = {}
 
 def load_games():
     GAME_REGISTRY.clear()
-    folder = Path(__file__).parent
 
+    folder = Path(__file__).parent
     for file in folder.glob("*.py"):
         if file.stem == "__init__":
             continue
 
         module = import_module(f"games.{file.stem}")
-        if hasattr(module, "GAME_KEY") and hasattr(module, "GAME_NAME") and hasattr(module, "render_page"):
+        if all(hasattr(module, attr) for attr in ("GAME_KEY", "GAME_NAME", "render_page")):
             GAME_REGISTRY[module.GAME_KEY] = module
 
     return GAME_REGISTRY
