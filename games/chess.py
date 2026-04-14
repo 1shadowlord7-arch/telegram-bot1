@@ -9,7 +9,6 @@ def render_page(base_url: str) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{GAME_NAME}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
   <style>
     body {{
       margin: 0;
@@ -31,22 +30,24 @@ def render_page(base_url: str) -> str:
       padding: 18px;
       box-shadow: 0 14px 40px rgba(0,0,0,.25);
     }}
-    #board {{
-      width: min(88vw, 420px);
-      margin-top: 14px;
+    .board {{
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 2px;
+      width: min(88vw, 480px);
+      margin-top: 16px;
+      border: 2px solid #334155;
     }}
-    .top {{
+    .sq {{
+      aspect-ratio: 1 / 1;
       display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      font-size: clamp(16px, 4vw, 30px);
+      user-select: none;
     }}
-    .status {{
-      margin-top: 12px;
-      font-size: 16px;
-      color: #cbd5e1;
-    }}
+    .light {{ background: #e5e7eb; color: #111827; }}
+    .dark {{ background: #64748b; color: white; }}
     .btn {{
       display: inline-block;
       margin-top: 14px;
@@ -59,83 +60,49 @@ def render_page(base_url: str) -> str:
       font-weight: 700;
     }}
     .note {{
-      margin-top: 10px;
-      font-size: 14px;
-      color: #94a3b8;
+      margin-top: 12px;
+      color: #cbd5e1;
+      line-height: 1.5;
     }}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <div class="top">
-        <div>
-          <h1>{GAME_NAME}</h1>
-          <div>Browser-based 2-player chess</div>
-        </div>
-        <div id="status" class="status">Loading...</div>
-      </div>
+      <h1>{GAME_NAME}</h1>
+      <div>Web page opened from Telegram</div>
 
-      <div id="board"></div>
+      <div class="board" id="board"></div>
 
       <a class="btn" href="{base_url}/play">Back to games</a>
       <a class="btn" href="{base_url}/">Bot home</a>
-      <a class="btn" href="https://t.me/share/url?url={base_url}/game/chess&text=Play%20Chess%20with%20me">Share link</a>
 
       <div class="note">
-        Works best on a phone or desktop browser. This page is separate from the Telegram bot and opens through the game button.
+        This is a clean starter page for chess. You can later replace it with a full chess engine without changing the bot.
       </div>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
   <script>
-    const game = new Chess();
-    const statusEl = document.getElementById("status");
+    const pieces = [
+      "♜","♞","♝","♛","♚","♝","♞","♜",
+      "♟","♟","♟","♟","♟","♟","♟","♟",
+      "","","","","","","","",
+      "","","","","","","","",
+      "","","","","","","","",
+      "","","","","","","","",
+      "♙","♙","♙","♙","♙","♙","♙","♙",
+      "♖","♘","♗","♕","♔","♗","♘","♖"
+    ];
 
-    function updateStatus() {{
-      let status = "";
-      const turn = game.turn() === "w" ? "White" : "Black";
+    const board = document.getElementById("board");
 
-      if (game.in_checkmate()) {{
-        status = "Game over, " + turn + " is checkmated.";
-      }} else if (game.in_draw()) {{
-        status = "Game over, draw.";
-      }} else {{
-        status = turn + " to move";
-        if (game.in_check()) status += ", check!";
-      }}
-
-      statusEl.textContent = status;
+    for (let i = 0; i < 64; i++) {{
+      const sq = document.createElement("div");
+      sq.className = "sq " + (((Math.floor(i / 8) + i) % 2 === 0) ? "light" : "dark");
+      sq.textContent = pieces[i];
+      board.appendChild(sq);
     }}
-
-    function onDragStart(source, piece) {{
-      if (game.game_over()) return false;
-      if (game.turn() === "w" && piece.startsWith("b")) return false;
-      if (game.turn() === "b" && piece.startsWith("w")) return false;
-    }}
-
-    function onDrop(source, target) {{
-      const move = game.move({{ from: source, to: target, promotion: "q" }});
-      if (move === null) return "snapback";
-      updateStatus();
-    }}
-
-    function onSnapEnd() {{
-      board.position(game.fen());
-    }}
-
-    const board = Chessboard("board", {{
-      draggable: true,
-      position: "start",
-      onDragStart,
-      onDrop,
-      onSnapEnd,
-      pieceTheme: "https://chessboardjs.com/img/chesspieces/wikipedia/{{piece}}.png"
-    }});
-
-    updateStatus();
   </script>
 </body>
 </html>
