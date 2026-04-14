@@ -180,23 +180,33 @@ def build_bot_app():
     return app_
 
 
+
 def start_bot():
-    global BOT_APP, BOT_READY, LAST_ERROR
+    import asyncio
+    import traceback
+
+    global BOT_READY, LAST_ERROR, BOT_APP
 
     try:
+        # 🔥 CREATE EVENT LOOP (FIX)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         BOT_APP = build_bot_app()
-        logger.info("Initializing Telegram bot...")
+
+        print("✅ Bot starting polling...")
+
         BOT_APP.run_polling(
             allowed_updates=Update.ALL_TYPES,
             drop_pending_updates=True,
             stop_signals=None,
         )
+
+        BOT_READY = True
+
     except Exception:
         LAST_ERROR = traceback.format_exc()
-        logger.exception("Bot crashed")
-        BOT_READY = False
-        raise
-
+        print("❌ BOT ERROR:\n", LAST_ERROR)
 
 def ensure_bot_started():
     global STARTUP_DONE
@@ -304,7 +314,5 @@ def bot_check():
 
 
 if __name__ == "__main__":
-    logger.info("Loaded games: %s", list(GAME_REGISTRY.keys()))
     ensure_bot_started()
-    logger.info("Starting Flask on port %s", PORT)
-    app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
+    app.run(host="0.0.0.0", port=PORT, use_reloader=False)
