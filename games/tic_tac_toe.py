@@ -19,10 +19,10 @@ def render_page(base_url: str) -> str:
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      padding: 16px;
     }}
     .wrap {{
       width: min(92vw, 420px);
-      text-align: center;
     }}
     .card {{
       background: #111827;
@@ -30,6 +30,7 @@ def render_page(base_url: str) -> str:
       border-radius: 18px;
       padding: 18px;
       box-shadow: 0 14px 40px rgba(0,0,0,.25);
+      text-align: center;
     }}
     .board {{
       display: grid;
@@ -69,6 +70,7 @@ def render_page(base_url: str) -> str:
       color: white;
       text-decoration: none;
       font-weight: 700;
+      margin-right: 8px;
     }}
     .status {{
       margin-top: 10px;
@@ -81,19 +83,18 @@ def render_page(base_url: str) -> str:
   <div class="wrap">
     <div class="card">
       <h1>{GAME_NAME}</h1>
-      <div>Local 2-player web game</div>
+      <div>Local 2-player browser game</div>
 
       <div id="status" class="status">X starts</div>
       <div class="board" id="board"></div>
 
       <div class="meta">
         <div>Tap a square to play.</div>
-        <div>Share this page link with friends.</div>
+        <div>Share the link with your friend.</div>
       </div>
 
       <a class="btn" href="{base_url}/play">Back to games</a>
       <a class="btn" href="{base_url}/">Bot home</a>
-      <a class="btn" href="https://t.me/share/url?url={base_url}/game/tic_tac_toe&text=Play%20Tic%20Tac%20Toe%20with%20me">Share link</a>
     </div>
   </div>
 
@@ -110,7 +111,7 @@ def render_page(base_url: str) -> str:
         [0,3,6],[1,4,7],[2,5,8],
         [0,4,8],[2,4,6]
       ];
-      for (const [a,b1,c] of lines) {{
+      for (const [a, b1, c] of lines) {{
         if (b[a] && b[a] === b[b1] && b[a] === b[c]) return b[a];
       }}
       return "";
