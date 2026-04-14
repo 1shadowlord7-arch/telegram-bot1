@@ -1,9 +1,9 @@
 import os
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-BOT_USERNAME = os.getenv("BOT_USERNAME", "").lstrip("@")
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "").lstrip("@")
-BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:5000").rstrip("/")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
+BOT_USERNAME = os.getenv("BOT_USERNAME", "").strip().lstrip("@")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "").strip().lstrip("@")
+BASE_URL = os.getenv("BASE_URL", "").strip().rstrip("/")
 PORT = int(os.getenv("PORT", "5000"))
 
 if not BOT_TOKEN:
@@ -14,3 +14,6 @@ if not BOT_USERNAME:
 
 if not ADMIN_USERNAME:
     raise RuntimeError("ADMIN_USERNAME is missing")
+
+if not BASE_URL:
+    raise RuntimeError("BASE_URL is missing")
