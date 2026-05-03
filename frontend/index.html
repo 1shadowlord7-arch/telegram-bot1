@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <title>Game Hub</title>
+  <style>
+    :root {
+      --bg: #060a0f;
+      --surface: #0d1420;
+      --surface2: #111c2e;
+      --surface3: #162235;
+      --border: rgba(255,255,255,0.06);
+      --border-glow: rgba(99,179,237,0.2);
+      --text: #e8f0fe;
+      --text-muted: #6b7fa3;
+      --text-dim: #3d4f6b;
+      --accent: #4f9eff;
+      --accent-glow: rgba(79,158,255,0.15);
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --ttt-x: #4f9eff;
+      --ttt-o: #f472b6;
+      --radius-sm: 10px;
+      --radius: 16px;
+      --radius-lg: 22px;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 14px 40px;
+    }
+    /* TOPBAR */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0 12px;
+      gap: 10px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-badge {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: grid; place-items: center;
+      font-family: var(--font-display);
+      font-weight: 800; font-size: 15px;
+      box-shadow: 0 0 20px rgba(79,158,255,0.3);
+      flex-shrink: 0;
+    }
+    .brand-text h1 { font-family: var(--font-display); font-size: 17px; font-weight: 800; letter-spacing: -0.3px; line-height: 1; }
+    .brand-text p { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .back-btn {
+      display: none; align-items: center; gap: 6px;
+      padding: 8px 13px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted); font-family: var(--font-body);
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      transition: all 0.15s ease; white-space: nowrap;
+    }
+    .back-btn:hover { color: var(--text); border-color: var(--border-glow); }
+    .back-btn.visible { display: flex; }
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px; margin-bottom: 16px;
+      position: relative; overflow: hidden;
+    }
+    .hero::after {
+      content: ''; position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(79,158,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero h2 { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 6px; }
+    .hero p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    /* SECTION */
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin: 20px 0 10px; }
+    .section-title h3 { font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+    .section-title .badge { font-size: 11px; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); padding: 3px 8px; border-radius: 999px; }
+    /* CARDS */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .card h4 { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .card p { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+    /* PROFILE CARD */
+    .profile-card {
+      display: flex; align-items: center; gap: 14px; padding: 16px;
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      position: relative; overflow: hidden; margin-bottom: 10px;
+    }
+    .profile-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent2));
+      border-radius: 3px 0 0 3px;
+    }
+    .avatar {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--surface3); border: 2px solid var(--border-glow);
+      flex-shrink: 0; display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 800; font-size: 20px;
+      object-fit: cover;
+    }
+    .avatar.sm { width: 46px; height: 46px; font-size: 16px; }
+    .profile-info h4 { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+    .profile-info .handle { font-size: 12px; color: var(--text-muted); }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .pill { font-size: 11px; padding: 3px 9px; border-radius: 999px; background: rgba(79,158,255,0.08); border: 1px solid rgba(79,158,255,0.15); color: var(--accent); }
+    /* USER CARD */
+    .usercard {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .usercard:hover { border-color: var(--border-glow); background: var(--surface2); }
+    .usercard .info { flex: 1; min-width: 0; }
+    .usercard .info .name { font-family: var(--font-display); font-weight: 700; font-size: 14px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .usercard .info .sub { font-size: 11px; color: var(--text-muted); }
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      border: 0; border-radius: var(--radius-sm);
+      padding: 10px 16px; font-family: var(--font-body); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: transform 0.12s ease, opacity 0.12s ease, box-shadow 0.15s ease;
+      white-space: nowrap; user-select: none; -webkit-user-select: none;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), #3b7de8); color: white; box-shadow: 0 4px 14px rgba(79,158,255,0.25); }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(79,158,255,0.35); transform: translateY(-1px); }
+    .btn-ghost { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); }
+    .btn-ghost:hover:not(:disabled) { color: var(--text); border-color: var(--border-glow); }
+    .btn-danger { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: var(--red); }
+    .btn-danger:hover:not(:disabled) { background: rgba(248,113,113,0.18); }
+    .btn-success { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.2); color: var(--green); }
+    .btn-success:hover:not(:disabled) { background: rgba(52,211,153,0.18); }
+    .btn-full { width: 100%; }
+    /* GAME */
+    .game-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .game-header h4 { font-family: var(--font-display); font-size: 17px; font-weight: 800; }
+    .game-badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+    .game-badge.live { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); color: var(--green); }
+    .game-badge.done { background: rgba(107,114,128,0.1); border: 1px solid rgba(107,114,128,0.2); color: var(--text-muted); }
+    .game-status-line { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; padding: 8px 12px; background: var(--surface2); border-radius: var(--radius-sm); border-left: 2px solid var(--accent); }
+    /* TTT */
+    .ttt-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
+    .ttt-cell {
+      aspect-ratio: 1; border-radius: 14px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text);
+      font-family: var(--font-display); font-size: 32px; font-weight: 800;
+      cursor: pointer; transition: all 0.15s ease; display: grid; place-items: center;
+    }
+    .ttt-cell:hover:not(:disabled):not(.played-x):not(.played-o) { background: var(--surface3); border-color: var(--border-glow); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .ttt-cell:disabled { cursor: not-allowed; }
+    .ttt-cell.played-x { background: rgba(79,158,255,0.08); border-color: rgba(79,158,255,0.25); color: var(--ttt-x); }
+    .ttt-cell.played-o { background: rgba(244,114,182,0.08); border-color: rgba(244,114,182,0.25); color: var(--ttt-o); }
+    @keyframes winPulse { 0%{transform:scale(1)}40%{transform:scale(1.06);box-shadow:0 0 20px rgba(79,158,255,0.4)}100%{transform:scale(1)} }
+    .ttt-cell.winning { animation: winPulse 0.6s ease forwards; }
+    /* RPS */
+    .rps-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
+    .rps-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 14px 8px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      cursor: pointer; font-family: var(--font-body);
+      transition: all 0.15s ease;
+    }
+    .rps-btn:hover:not(:disabled) { background: var(--surface3); border-color: var(--border-glow); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    .rps-btn:active:not(:disabled) { transform: scale(0.97); }
+    .rps-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+    .rps-btn .emoji { font-size: 32px; line-height: 1; }
+    .rps-btn .label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .rps-btn.chosen { border-color: var(--accent); background: rgba(79,158,255,0.1); box-shadow: 0 0 12px rgba(79,158,255,0.15); }
+    .rps-btn.chosen .label { color: var(--accent); }
+    .rps-result { margin-top: 12px; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border-glow); border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; text-align: center; animation: fadeSlideIn 0.3s ease; }
+    /* VS BAR */
+    .vs-bar { display: flex; align-items: center; gap: 10px; margin: 14px 0; }
+    .vs-player { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .vs-player .name { font-family: var(--font-display); font-size: 12px; font-weight: 700; text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .vs-divider { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--text-dim); flex-shrink: 0; }
+    /* GAME PICK */
+    .game-pick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .game-pick-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; transition: border-color 0.2s ease; }
+    .game-pick-card:hover { border-color: var(--border-glow); }
+    .game-pick-card .icon { font-size: 28px; line-height: 1; }
+    .game-pick-card h5 { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+    .game-pick-card p { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+    /* INPUTS */
+    .input, .textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text);
+      font-family: var(--font-body); font-size: 14px; padding: 11px 13px; outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .input:focus, .textarea:focus { border-color: var(--border-glow); box-shadow: 0 0 0 3px rgba(79,158,255,0.06); }
+    .textarea { min-height: 80px; resize: vertical; }
+    /* STATUS */
+    .status-pending { color: var(--yellow); }
+    .status-working { color: var(--accent); }
+    .status-done    { color: var(--green); }
+    .status-cancelled { color: var(--red); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    .status-dot.pending  { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+    .status-dot.working  { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 1.5s infinite; }
+    .status-dot.done     { background: var(--green); }
+    .status-dot.cancelled { background: var(--red); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    /* ADMIN */
+    .admin-req-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+    .admin-req-card + .admin-req-card { margin-top: 10px; }
+    .admin-req-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .admin-req-id { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+    .req-text { font-size: 13px; color: var(--text); line-height: 1.55; padding: 10px 12px; background: var(--surface2); border-radius: var(--radius-sm); margin-bottom: 10px; }
+    .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    /* TOAST */
+    .toast {
+      position: fixed; left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border-glow);
+      padding: 11px 16px; border-radius: var(--radius-sm);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      max-width: min(90vw, 340px); z-index: 100;
+      font-size: 13px; font-weight: 500; text-align: center;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    /* SKELETON */
+    .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .loader-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .loader-line { height: 12px; margin-bottom: 8px; }
+    /* EMPTY */
+    .empty { padding: 28px 20px; text-align: center; color: var(--text-muted); border: 1px dashed rgba(255,255,255,0.07); border-radius: var(--radius); font-size: 13px; line-height: 1.7; }
+    .empty .empty-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+    /* ANIM */
+    @keyframes fadeSlideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in { animation: fadeSlideIn 0.3s ease forwards; }
+    /* MISC */
+    .divider { height: 1px; background: var(--border); margin: 12px 0; }
+    .sp-4  { height: 4px; }
+    .sp-8  { height: 8px; }
+    .sp-12 { height: 12px; }
+    .list  { display: flex; flex-direction: column; gap: 8px; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">GH</div>
+        <div class="brand-text">
+          <h1>Game Hub</h1>
+          <p>Telegram Mini App</p>
+        </div>
+      </div>
+      <button class="back-btn" id="backBtn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back
+      </button>
+    </div>
+    <div id="appView"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── Telegram init ──
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      try { tg.expand(); } catch (_) {}
+      try { tg.disableVerticalSwipes?.(); } catch (_) {}
+    }
+
+    const appView = document.getElementById('appView');
+    const toastEl = document.getElementById('toast');
+    const backBtn = document.getElementById('backBtn');
+
+    // ── Routing ──
+    const rawPath = location.pathname.replace(/\/$/, '') || '/';
+    const parts   = rawPath.split('/').filter(Boolean);
+    const page    = parts[0] || 'games';
+    const tokenFromPath = parts.slice(1).join('/');
+    const token = new URLSearchParams(location.search).get('token') || tokenFromPath || '';
+
+    // ── Helpers ──
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>'"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function initials(name) {
+      const p = String(name || '').trim().split(/\s+/).filter(Boolean);
+      if (!p.length) return '?';
+      if (p.length === 1) return p[0][0].toUpperCase();
+      return (p[0][0] + p[1][0]).toUpperCase();
+    }
+    function avatarEl(user, cls) {
+      const name  = user?.full_name || user?.name || user?.username || '';
+      const photo = user?.photo_url;
+      const c = cls ? ' ' + cls : '';
+      if (photo) {
+        const ini = initials(name);
+        return `<img class="avatar${c}" src="${esc(photo)}" alt="" onerror="this.outerHTML='<div class=\\'avatar${c}\\'>${ini}</div>'">`;
+      }
+      return `<div class="avatar${c}">${initials(name)}</div>`;
+    }
+
+    let _toastTimer;
+    function showToast(msg, type) {
+      toastEl.textContent = String(msg || '');
+      toastEl.style.borderColor = type === 'error' ? 'rgba(248,113,113,0.3)' :
+                                   type === 'ok'    ? 'rgba(52,211,153,0.3)'  :
+                                                      'rgba(99,179,237,0.2)';
+      toastEl.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2800);
+    }
+
+    async function api(url, options) {
+      options = options || {};
+      const headers = Object.assign({}, options.headers || {});
+      if (tg && tg.initData) headers['X-Telegram-WebApp-InitData'] = tg.initData;
+      if (options.json !== undefined) {
+        headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(options.json);
+        delete options.json;
+      }
+      const res = await fetch(url, Object.assign({}, options, { headers }));
+      const ct  = res.headers.get('content-type') || '';
+      const data = ct.includes('application/json') ? await res.json() : await res.text();
+      if (!res.ok) {
+        const msg = (data && typeof data === 'object' && data.error) ? data.error : ('HTTP ' + res.status);
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    function goBack() {
+      if (history.length > 1) history.back();
+      else location.assign('/');
+    }
+
+    function showLoader() {
+      appView.innerHTML =
+        '<div class="loader-card"><div class="skeleton loader-line" style="width:45%;margin-bottom:12px"></div><div class="skeleton loader-line" style="width:80%"></div><div class="skeleton loader-line" style="width:60%"></div></div>' +
+        '<div class="sp-8"></div>' +
+        '<div class="loader-card"><div class="skeleton loader-line" style="width:55%;margin-bottom:12px"></div><div class="skeleton loader-line" style="width:90%"></div><div class="skeleton loader-line" style="width:50%"></div></div>';
+    }
+
+    // ─────────────────────────────────────────
+    //  HOME
+    // ─────────────────────────────────────────
+    async function loadHome() {
+      showLoader();
+      var fd = { viewer: null, friends: [] };
+      try { fd = await api('/api/friends/list'); } catch (_) {}
+      var v = fd.viewer;
+      var friends = Array.isArray(fd.friends) ? fd.friends : [];
+
+      var profileCard = v
+        ? '<div class="profile-card fade-in">' +
+            avatarEl(v) +
+            '<div class="profile-info">' +
+              '<h4>' + esc(v.full_name || 'Telegram user') + '</h4>' +
+              '<div class="handle">' + (v.username ? '@' + esc(v.username) : 'No username') + ' &bull; ID ' + esc(String(v.user_id)) + '</div>' +
+              '<div class="pill-row"><span class="pill">Mini App</span><span class="pill">Friends ' + friends.length + '/100</span></div>' +
+            '</div>' +
+          '</div>'
+        : '<div class="card fade-in"><h4>Open inside Telegram</h4><div class="sp-4"></div><p>Profile data loads when you open this from the bot menu or a game invite link.</p></div>';
+
+      var friendsHtml = friends.length
+        ? friends.map(function(f) {
+            return '<div class="usercard fade-in">' +
+              avatarEl(f, 'sm') +
+              '<div class="info"><div class="name">' + esc(f.name || f.full_name || 'User') + '</div>' +
+              '<div class="sub">' + (f.username ? '@' + esc(f.username) : 'no username') + '</div></div>' +
+              '<button class="btn btn-danger" onclick="removeFriend(' + Number(f.id) + ')">Remove</button>' +
+            '</div>';
+          }).join('')
+        : '<div class="empty"><span class="empty-icon">👥</span>No friends yet.<br>Add friends from inside a game room.</div>';
+
+      appView.innerHTML =
+        '<div class="hero fade-in"><h2>Welcome back' + (v && v.full_name ? ', ' + esc(v.full_name.split(' ')[0]) : '') + '! 👋</h2>' +
+        '<p>Challenge friends in a group, then play right here in the mini app.</p></div>' +
+
+        profileCard +
+
+        '<div class="section-title"><h3>🎮 Games</h3><span class="badge">2 available</span></div>' +
+        '<div class="game-pick-grid">' +
+          '<div class="game-pick-card"><div class="icon">❎</div><h5>Tic Tac Toe</h5><p>Classic 3×3 grid. First to 3 in a row wins.</p></div>' +
+          '<div class="game-pick-card"><div class="icon">✊</div><h5>Rock Paper Scissors</h5><p>Simultaneous reveal. Best-of-1 face-off.</p></div>' +
+        '</div>' +
+
+        '<div class="card fade-in" style="margin-bottom:16px"><h4>How to play</h4><div class="sp-4"></div>' +
+        '<p>Type <strong>/challenge @username</strong> in any group the bot is in. Select a game — the match opens here with player info and live moves.</p></div>' +
+
+        '<div class="section-title"><h3>👥 Friends</h3><span class="badge">' + friends.length + '/100</span></div>' +
+        '<div class="list">' + friendsHtml + '</div>';
+    }
+
+    async function removeFriend(id) {
+      try {
+        await api('/api/friends/remove', { method: 'POST', json: { target_id: id } });
+        showToast('Friend removed', 'ok');
+        loadHome();
+      } catch (e) {
+        showToast(e.message || 'Could not remove friend', 'error');
+      }
+    }
+
+    async function sendFriendRequest(id) {
+      try {
+        await api('/api/friends/request', { method: 'POST', json: { target_id: id } });
+        showToast('Friend request sent! ✓', 'ok');
+      } catch (e) {
+        showToast(e.message || 'Could not send request', 'error');
+      }
+    }
+
+    // ─────────────────────────────────────────
+    //  GAME
+    // ─────────────────────────────────────────
+    async function loadGame() {
+      if (!token) {
+        appView.innerHTML = '<div class="empty"><span class="empty-icon">🔗</span>No game token found.<br>Open this from a game invite in Telegram.</div>';
+        return;
+      }
+      showLoader();
+      var data;
+      try {
+        data = await api('/api/game/' + encodeURIComponent(token) + '/state');
+      } catch (e) {
+        appView.innerHTML = '<div class="card"><h4>Could not load game</h4><div class="sp-4"></div><p>' + esc(e.message) + '</p><div class="sp-12"></div><button class="btn btn-ghost btn-full" onclick="loadGame()">Retry</button></div>';
+        return;
+      }
+
+      var game     = data.game || {};
+      var viewerId = (data.viewer && data.viewer.user_id) ? data.viewer.user_id : null;
+      var players  = Array.isArray(game.players) ? game.players : [];
+      var p1 = players[0];
+      var p2 = players[1];
+
+      var vsBar = (p1 && p2)
+        ? '<div class="vs-bar">' +
+            '<div class="vs-player">' + avatarEl(p1) + '<div class="name">' + esc(p1.name || p1.full_name || 'P1') + '</div></div>' +
+            '<div class="vs-divider">VS</div>' +
+            '<div class="vs-player">' + avatarEl(p2) + '<div class="name">' + esc(p2.name || p2.full_name || 'P2') + '</div></div>' +
+          '</div>'
+        : '';
+
+      var friendBtns = players.map(function(p) {
+        if (!viewerId || viewerId === p.id) return '';
+        if (p.friend_state === 'friends')
+          return '<button class="btn btn-danger" style="font-size:12px;padding:7px 11px" onclick="removeFriend(' + Number(p.id) + ')">Remove ' + esc((p.name||'').split(' ')[0]) + '</button>';
+        return '<button class="btn btn-success" style="font-size:12px;padding:7px 11px" onclick="sendFriendRequest(' + Number(p.id) + ')">Add ' + esc((p.name||'').split(' ')[0]) + '</button>';
+      }).filter(Boolean).join('');
+
+      var gameUI = '';
+
+      if (game.type === 'ttt') {
+        var board = (Array.isArray(game.board) && game.board.length === 9) ? game.board : Array(9).fill(' ');
+        var isMyTurn = viewerId && !game.ended && game.turn === viewerId;
+        var turnPlayer = players.find(function(p){ return p.id === game.turn; });
+        var statusMsg = game.ended
+          ? (game.winner === 'draw' ? "It's a draw!" : esc(game.winner) + " wins! 🎉")
+          : (isMyTurn ? "Your turn!" : "Waiting for " + esc((turnPlayer && turnPlayer.name ? turnPlayer.name.split(' ')[0] : 'opponent')) + "…");
+
+        var cells = board.map(function(v, i) {
+          var sym = String(v).trim();
+          var cls = sym === 'X' ? 'played-x' : sym === 'O' ? 'played-o' : '';
+          var disabled = game.ended || sym !== '' || !isMyTurn;
+          return '<button class="ttt-cell ' + cls + '" data-cell="' + i + '"' + (disabled ? ' disabled' : '') + '>' + esc(sym) + '</button>';
+        }).join('');
+
+        gameUI =
+          '<div class="game-header"><h4>Tic Tac Toe</h4><span class="game-badge ' + (game.ended ? 'done' : 'live') + '">' + (game.ended ? 'Finished' : 'Live') + '</span></div>' +
+          '<div class="game-status-line">' + statusMsg + '</div>' +
+          vsBar +
+          '<div class="ttt-board">' + cells + '</div>';
+
+      } else if (game.type === 'rps') {
+        var choices  = game.choices || {};
+        var myChoice = viewerId ? choices[viewerId] : null;
+        var statusMsg2 = game.ended
+          ? esc(game.result || 'Game over')
+          : myChoice ? ('You chose ' + esc(myChoice) + '. Waiting for opponent…')
+                     : 'Pick your move!';
+
+        var rpsOpts = [
+          { choice: 'rock',     emoji: '✊', label: 'Rock' },
+          { choice: 'paper',    emoji: '✋', label: 'Paper' },
+          { choice: 'scissors', emoji: '✌️', label: 'Scissors' },
+        ];
+        var btns = rpsOpts.map(function(o) {
+          var chosen = myChoice === o.choice ? ' chosen' : '';
+          var dis = (game.ended || myChoice) ? ' disabled' : '';
+          return '<button class="rps-btn' + chosen + '" data-choice="' + o.choice + '"' + dis + '>' +
+            '<span class="emoji">' + o.emoji + '</span>' +
+            '<span class="label">' + o.label + '</span>' +
+            '</button>';
+        }).join('');
+
+        var resultBox = (game.ended && game.result)
+          ? '<div class="rps-result">' + esc(game.result) + '</div>' : '';
+
+        gameUI =
+          '<div class="game-header"><h4>Rock Paper Scissors</h4><span class="game-badge ' + (game.ended ? 'done' : 'live') + '">' + (game.ended ? 'Finished' : 'Live') + '</span></div>' +
+          '<div class="game-status-line">' + statusMsg2 + '</div>' +
+          vsBar +
+          '<div class="rps-choices">' + btns + '</div>' +
+          resultBox;
+      } else {
+        gameUI = '<div class="empty">Unknown game type: ' + esc(game.type) + '</div>';
+      }
+
+      appView.innerHTML =
+        '<div class="card fade-in">' +
+          gameUI +
+          (friendBtns ? '<div class="divider"></div><div style="display:flex;gap:8px;flex-wrap:wrap">' + friendBtns + '</div>' : '') +
+        '</div>' +
+        (!game.ended
+          ? '<div class="sp-8"></div><button class="btn btn-ghost btn-full" onclick="loadGame()">' +
+            '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7a6 6 0 1 0 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M1 7V3m0 4H5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            ' Refresh</button>'
+          : '');
+
+      document.querySelectorAll('[data-cell]').forEach(function(btn) {
+        btn.addEventListener('click', async function() {
+          btn.disabled = true;
+          try {
+            await api('/api/game/' + encodeURIComponent(token) + '/move', { method: 'POST', json: { cell: Number(btn.dataset.cell) } });
+            loadGame();
+          } catch (e) {
+            showToast(e.message || 'Move failed', 'error');
+            btn.disabled = false;
+          }
+        });
+      });
+
+      document.querySelectorAll('[data-choice]').forEach(function(btn) {
+        btn.addEventListener('click', async function() {
+          document.querySelectorAll('[data-choice]').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('chosen');
+          try {
+            await api('/api/game/' + encodeURIComponent(token) + '/move', { method: 'POST', json: { choice: btn.dataset.choice } });
+            setTimeout(loadGame, 700);
+          } catch (e) {
+            showToast(e.message || 'Move failed', 'error');
+            document.querySelectorAll('[data-choice]').forEach(function(b){ b.disabled = false; });
+            btn.classList.remove('chosen');
+          }
+        });
+      });
+    }
+
+    // ─────────────────────────────────────────
+    //  STATUS
+    // ─────────────────────────────────────────
+    async function loadStatus() {
+      if (!token) { appView.innerHTML = '<div class="empty">Missing token.</div>'; return; }
+      showLoader();
+      var data;
+      try {
+        data = await api('/api/request/status?token=' + encodeURIComponent(token));
+      } catch (e) {
+        appView.innerHTML = '<div class="card"><h4>Error</h4><p>' + esc(e.message) + '</p></div>';
+        return;
+      }
+      var orderMap = { pending: 0, working: 1, done: 2, cancelled: 3 };
+      var requests = (Array.isArray(data.requests) ? data.requests : []).slice()
+        .sort(function(a,b){ return (orderMap[a.status]||9) - (orderMap[b.status]||9) || (a.created_at - b.created_at); });
+
+      var rows = requests.map(function(r) {
+        return '<div class="admin-req-card fade-in">' +
+          '<div class="admin-req-header">' +
+            '<div class="admin-req-id"><span class="status-dot ' + esc(r.status) + '"></span>#' + esc(r.id) + '</div>' +
+            '<span class="status-' + esc(r.status) + '" style="font-size:12px;font-weight:600">' + esc(r.status) + '</span>' +
+          '</div>' +
+          '<div class="req-text">' + esc(r.text || '') + '</div>' +
+          (r.note ? '<div style="font-size:12px;color:var(--text-muted)"><strong>Note:</strong> ' + esc(r.note) + '</div>' : '') +
+        '</div>';
+      }).join('');
+
+      appView.innerHTML =
+        '<div class="hero fade-in"><h2>My Requests</h2><p>Pending requests are listed first. You\'ll get a Telegram notification when status changes.</p></div>' +
+        (rows || '<div class="empty"><span class="empty-icon">📋</span>No requests yet.</div>');
+    }
+
+    // ─────────────────────────────────────────
+    //  ADMIN
+    // ─────────────────────────────────────────
+    async function loadAdmin() {
+      if (!token) { appView.innerHTML = '<div class="empty">Missing admin token.</div>'; return; }
+      showLoader();
+      var data;
+      try {
+        data = await api('/api/request/dashboard?token=' + encodeURIComponent(token));
+      } catch (e) {
+        appView.innerHTML = '<div class="card"><h4>Error</h4><p>' + esc(e.message) + '</p></div>';
+        return;
+      }
+      var pending = (Array.isArray(data.requests) ? data.requests : [])
+        .filter(function(r){ return ['pending','working'].includes(String(r.status||'').toLowerCase()); });
+
+      var rows = pending.map(function(r) {
+        return '<div class="admin-req-card fade-in" data-req="' + esc(r.id) + '">' +
+          '<div class="admin-req-header">' +
+            '<div class="admin-req-id"><span class="status-dot ' + esc(r.status) + '"></span>#' + esc(r.id) + ' &mdash; ' + esc(r.full_name||'Unknown') + '</div>' +
+            '<span class="status-' + esc(r.status) + '" style="font-size:12px;font-weight:600">' + esc(r.status) + '</span>' +
+          '</div>' +
+          '<div class="req-text">' + esc(r.text||'') + '</div>' +
+          '<input class="input note" placeholder="Reply to member (optional)" value="' + esc(r.note||'') + '">' +
+          '<div class="admin-actions">' +
+            '<button class="btn btn-ghost" data-action="working">🛠 Working</button>' +
+            '<button class="btn btn-success" data-action="done">✅ Done</button>' +
+            '<button class="btn btn-danger" data-action="cancel">✕ Cancel</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      appView.innerHTML =
+        '<div class="hero fade-in"><h2>Admin Dashboard</h2><p>Updates notify members instantly. Completed items disappear from this view.</p></div>' +
+        (rows || '<div class="empty"><span class="empty-icon">✅</span>No active requests right now.</div>');
+
+      document.querySelectorAll('.admin-req-card').forEach(function(card) {
+        var reqId = card.dataset.req;
+        var noteInput = card.querySelector('.note');
+        card.querySelectorAll('[data-action]').forEach(function(btn) {
+          btn.addEventListener('click', async function() {
+            var allBtns = card.querySelectorAll('[data-action]');
+            allBtns.forEach(function(b){ b.disabled = true; });
+            try {
+              var form = new FormData();
+              form.append('token', token);
+              form.append('action', btn.dataset.action);
+              form.append('note', noteInput ? noteInput.value : '');
+              var res = await fetch('/api/request/' + reqId + '/update', { method: 'POST', body: form });
+              if (!res.ok) throw new Error('Update failed');
+              showToast('Updated ✓', 'ok');
+              if (btn.dataset.action === 'done' || btn.dataset.action === 'cancel') {
+                card.style.transition = 'opacity 0.3s ease';
+                card.style.opacity = '0';
+                setTimeout(function(){ card.remove(); }, 300);
+              } else {
+                loadAdmin();
+              }
+            } catch (e) {
+              showToast(e.message || 'Could not update', 'error');
+              allBtns.forEach(function(b){ b.disabled = false; });
+            }
+          });
+        });
+      });
+    }
+
+    // ─────────────────────────────────────────
+    //  ROUTER
+    // ─────────────────────────────────────────
+    function loadRoute() {
+      var isHome = (page === 'games' || page === '/');
+      if (isHome) backBtn.classList.remove('visible');
+      else        backBtn.classList.add('visible');
+
+      if (page === 'game')   return loadGame();
+      if (page === 'status') return loadStatus();
+      if (page === 'admin')  return loadAdmin();
+      return loadHome();
+    }
+
+    // expose for inline onclick
+    window.removeFriend     = removeFriend;
+    window.sendFriendRequest = sendFriendRequest;
+    window.loadGame         = loadGame;
+    window.goBack           = goBack;
+
+    loadRoute().catch(function(err) {
+      console.error(err);
+      appView.innerHTML =
+        '<div class="card fade-in"><h4>Something went wrong</h4><div class="sp-4"></div>' +
+        '<p>' + esc(err && err.message ? err.message : String(err)) + '</p>' +
+        '<div class="sp-12"></div><button class="btn btn-ghost btn-full" onclick="loadRoute()">Try again</button></div>';
+    });
+  </script>
+</body>
+  </html>
