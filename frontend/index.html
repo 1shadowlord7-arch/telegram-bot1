@@ -1,1 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <title>Game Hub</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --panel: #141a26;
+      --panel-2: #1a2230;
+      --muted: #8d99ad;
+      --text: #eef2ff;
+      --accent: #6c8cff;
+      --accent-2: #7df0b4;
+      --danger: #ff6b88;
+      --border: rgba(255,255,255,.07);
+      --shadow: 0 12px 40px rgba(0,0,0,.25);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #182033 0%, var(--bg) 42%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input {
+      font: inherit;
+    }
+    .app {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 40px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6c8cff, #8b5cf6);
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow);
+      font-weight: 900;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.1;
+    }
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .hero, .card, .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
+    .hero {
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .hero h2 {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 3vw, 36px);
+    }
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+    .grid.cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .grid.cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    @media (max-width: 900px) {
+      .grid.cols-2, .grid.cols-3 { grid-template-columns: 1fr; }
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 22px 0 12px;
+    }
+    .section-title h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .section-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .profile-card {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 16px;
+    }
+    .avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #263047;
+      flex: 0 0 68px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 22px;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .meta h4 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+    .meta p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .pill {
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      color: #dce3f5;
+      font-size: 12px;
+    }
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: linear-gradient(135deg, #6c8cff, #5b7cff);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn.secondary { background: #232c40; }
+    .btn.danger { background: linear-gradient(135deg, #ff5f7d, #ff7c61); }
+    .btn.ghost { background: rgba(255,255,255,.05); }
+    .btn.small { padding: 10px 12px; font-size: 13px; }
+    .btn.full { width: 100%; }
+    .input, .textarea, .select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #0f1420;
+      color: var(--text);
+      padding: 12px 14px;
+      outline: none;
+    }
+    .textarea { min-height: 92px; resize: vertical; }
+    .muted { color: var(--muted); }
+    .card {
+      padding: 16px;
+    }
+    .card h4 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .cell {
+      aspect-ratio: 1;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: #111827;
+      color: var(--text);
+      font-size: 34px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .12s ease, background .12s ease;
+    }
+    .cell:hover { transform: translateY(-1px); }
+    .cell:disabled { opacity: .75; cursor: not-allowed; transform: none; }
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .usercard {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+    .usercard .avatar { width: 56px; height: 56px; flex-basis: 56px; font-size: 18px; }
+    .usercard .info { flex: 1; min-width: 0; }
+    .usercard .info .name { font-weight: 800; margin-bottom: 3px; }
+    .usercard .info .uname, .subline { color: var(--muted); font-size: 12px; }
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(11,15,23,.95);
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      max-width: min(92vw, 520px);
+      display: none;
+      z-index: 30;
+    }
+    .status-pending { color: #f7d96f; }
+    .status-working { color: #6cc7ff; }
+    .status-done { color: #7df0b4; }
+    .status-cancelled { color: #ff8b8b; }
+    .spacer { height: 8px; }
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed rgba(255,255,255,.12);
+      border-radius: 18px;
+      background: rgba(255,255,255,.02);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">TG</div>
+        <div>
+          <h1>Game Hub</h1>
+          <p>Telegram Mini App • profile cards • friends • requests</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="btn ghost small" id="backBtn" onclick="history.length > 1 ? history.back() : location.assign('/games')">↩ Back</button>
+      </div>
+    </div>
 
+    <div id="appView"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      try { tg.expand(); } catch (_) {}
+    }
+
+    const appView = document.getElementById('appView');
+    const toastEl = document.getElementById('toast');
+
+    const path = location.pathname.replace(/\/$/, '') || '/';
+    const API_BASE = (window.__BACKEND_URL__ || '').replace(/\/$/, '');
+    const parts = path.split('/').filter(Boolean);
+    const page = parts[0] || 'games';
+    const tokenFromPath = parts.slice(1).join('/');
+    const token = new URLSearchParams(location.search).get('token') || tokenFromPath;
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>'"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    }
+    function initials(name) {
+      const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return '?';
+      if (parts.length === 1) return parts[0][0].toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.style.display = 'block';
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => { toastEl.style.display = 'none'; }, 2600);
+    }
+    async function api(url, options = {}) {
+      const headers = Object.assign({}, options.headers || {});
+      if (tg?.initData) headers['X-Telegram-WebApp-InitData'] = tg.initData;
+      if (options.json !== undefined) {
+        headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(options.json);
+      }
+      const finalUrl = url.startsWith('/api/') && API_BASE ? `${API_BASE}${url}` : url;
+      const res = await fetch(finalUrl, { ...options, headers });
+      const ct = res.headers.get('content-type') || '';
+      const data = ct.includes('application/json') ? await res.json() : await res.text();
+      if (!res.ok && data && typeof data === 'object' && data.error) {
+        throw new Error(data.error);
+      }
+      return data;
+    }
+    function statusClass(status) {
+      return 'status-' + String(status || '').toLowerCase();
+    }
+    function routeTo(url) {
+      location.href = url;
+    }
+
+    function pageShell(title, subtitle, body) {
+      appView.innerHTML = `
+        <div class="hero">
+          <h2>${esc(title)}</h2>
+          <p>${esc(subtitle)}</p>
+        </div>
+        ${body}
+      `;
+    }
+
+    async function loadHome() {
+      let friendsData = { viewer: null, friends: [] };
+      try {
+        friendsData = await api('/api/friends/list');
+      } catch (e) {
+        friendsData = { viewer: null, friends: [] };
+      }
+      const viewer = friendsData.viewer;
+      const profile = viewer ? `
+        <div class="card profile-card">
+          ${viewer.photo_url ? `<img class="avatar" src="${esc(viewer.photo_url)}" alt="dp">` : `<div class="avatar">${initials(viewer.full_name || viewer.username || 'You')}</div>`}
+          <div class="meta">
+            <h4>${esc(viewer.full_name || 'Telegram user')}</h4>
+            <p>${viewer.username ? '@' + esc(viewer.username) : 'No username'} • ${esc(String(viewer.user_id))}</p>
+            <div class="pill-row">
+              <span class="pill">DP + name UI</span>
+              <span class="pill">Friends max 100</span>
+              <span class="pill">Mini App</span>
+            </div>
+          </div>
+        </div>
+      ` : `
+        <div class="card">
+          <h4>Open inside Telegram</h4>
+          <p>This page reads Telegram profile data when it is opened from the bot menu or a game invite.</p>
+        </div>
+      `;
+
+      const friends = (friendsData.friends || []).map(f => `
+        <div class="usercard">
+          ${f.photo_url ? `<img class="avatar" src="${esc(f.photo_url)}" alt="dp">` : `<div class="avatar">${initials(f.name)}</div>`}
+          <div class="info">
+            <div class="name">${esc(f.name)}</div>
+            <div class="uname">${f.username ? '@' + esc(f.username) : 'no username'}</div>
+          </div>
+          <button class="btn danger small" onclick="removeFriend(${f.id})">Remove</button>
+        </div>
+      `).join('');
+
+      pageShell('Game hub', 'Open a challenge in a group, then the match opens here with player photos, names, and friend actions.', `
+        <div class="grid cols-2">
+          ${profile}
+          <div class="card">
+            <h4>Play games</h4>
+            <p>Use <b>/challenge @username</b> in a group. Choose one of the games below when the challenge appears.</p>
+            <div class="spacer"></div>
+            <div class="list">
+              <div class="usercard">
+                <div class="avatar">❎</div>
+                <div class="info"><div class="name">Tic Tac Toe</div><div class="uname">Fast 1v1 match</div></div>
+                <button class="btn small" onclick="showToast('Use /challenge @username in a group to start Tic Tac Toe.')">Info</button>
+              </div>
+              <div class="usercard">
+                <div class="avatar">✊</div>
+                <div class="info"><div class="name">Rock Paper Scissors</div><div class="uname">Best-of-1 faceoff</div></div>
+                <button class="btn small" onclick="showToast('Use /challenge @username in a group to start Rock Paper Scissors.')">Info</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title"><h3>My friends</h3><span>${(friendsData.friends || []).length}/100</span></div>
+        ${friendsData.friends?.length ? `<div class="list">${friends}</div>` : `<div class="empty">No friends yet. Open a game room and use the friend buttons on player cards.</div>`}
+      `);
+    }
+
+    async function removeFriend(id) {
+      try {
+        await api('/api/friends/remove', { method: 'POST', json: { target_id: id } });
+        showToast('Friend removed');
+        loadHome();
+      } catch (e) {
+        showToast(e.message || 'Could not remove friend');
+      }
+    }
+
+    async function sendFriendRequest(id) {
+      try {
+        await api('/api/friends/request', { method: 'POST', json: { target_id: id } });
+        showToast('Friend request sent');
+      } catch (e) {
+        showToast(e.message || 'Could not send friend request');
+      }
+    }
+
+    async function loadGame() {
+      if (!token) {
+        pageShell('Game room', 'Missing game token.', `<div class="empty">This page needs a valid game token.</div>`);
+        return;
+      }
+      const data = await api(`/api/game/${encodeURIComponent(token)}/state`);
+      const game = data.game;
+      const viewerId = data.viewer?.user_id;
+
+      const players = (game.players || []).map((p, idx) => `
+        <div class="usercard">
+          ${p.photo_url ? `<img class="avatar" src="${esc(p.photo_url)}" alt="dp">` : `<div class="avatar">${initials(p.name)}</div>`}
+          <div class="info">
+            <div class="name">${idx === 0 ? 'Player 1: ' : 'Player 2: '}${esc(p.name)}</div>
+            <div class="uname">${p.username ? '@' + esc(p.username) : 'no username'} • ${esc(p.friend_state)}</div>
+          </div>
+          ${viewerId && viewerId !== p.id ? (p.friend_state === 'friends' ? `<button class="btn danger small" onclick="removeFriend(${p.id})">Remove</button>` : `<button class="btn small" onclick="sendFriendRequest(${p.id})">Add friend</button>`) : ''}
+        </div>
+      `).join('');
+
+      let gameArea = '';
+      if (game.type === 'ttt') {
+        const board = game.board || Array(9).fill(' ');
+        gameArea = `
+          <div class="card">
+            <div class="row">
+              <div>
+                <h4>Tic Tac Toe</h4>
+                <div class="subline">${esc(game.status || '')}</div>
+              </div>
+              <div class="pill ${game.ended ? 'status-done' : ''}">${game.ended ? 'Finished' : 'Live'}</div>
+            </div>
+            <div class="game-board">
+              ${board.map((v, i) => `<button class="cell" data-cell="${i}" ${game.ended || v !== ' ' ? 'disabled' : ''}>${esc(v === ' ' ? '' : v)}</button>`).join('')}
+            </div>
+          </div>
+        `;
+      } else if (game.type === 'rps') {
+        gameArea = `
+          <div class="card">
+            <div class="row">
+              <div>
+                <h4>Rock Paper Scissors</h4>
+                <div class="subline">${esc(game.status || '')}</div>
+              </div>
+              <div class="pill ${game.ended ? 'status-done' : ''}">${game.ended ? 'Finished' : 'Live'}</div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+              <button class="btn" data-choice="rock">✊ Rock</button>
+              <button class="btn secondary" data-choice="paper">✋ Paper</button>
+              <button class="btn ghost" data-choice="scissors">✌️ Scissors</button>
+            </div>
+            <div class="spacer"></div>
+            <div class="subline">${esc(game.choices_text || 'Choose your move')}</div>
+            ${game.result ? `<div class="spacer"></div><div class="card" style="padding:12px;background:rgba(255,255,255,.02)"><b>Result:</b> ${esc(game.result)}</div>` : ''}
+          </div>
+        `;
+      }
+
+      pageShell('Game room', 'See both players with their Telegram names and profile photos, then play directly in the mini app.', `
+        <div class="grid cols-2">
+          <div class="card">
+            <h4>Players</h4>
+            <p>Tap add/remove friend right from the player card.</p>
+            <div class="spacer"></div>
+            <div class="list">${players || '<div class="empty">No players found.</div>'}</div>
+          </div>
+          ${gameArea}
+        </div>
+      `);
+
+      document.querySelectorAll('[data-cell]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          try {
+            await api(`/api/game/${encodeURIComponent(token)}/move`, { method: 'POST', json: { cell: Number(btn.dataset.cell) } });
+            loadGame();
+          } catch (e) {
+            showToast(e.message || 'Move failed');
+          }
+        });
+      });
+      document.querySelectorAll('[data-choice]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          try {
+            await api(`/api/game/${encodeURIComponent(token)}/move`, { method: 'POST', json: { choice: btn.dataset.choice } });
+            loadGame();
+          } catch (e) {
+            showToast(e.message || 'Move failed');
+          }
+        });
+      });
+    }
+
+    async function loadStatus() {
+      if (!token) {
+        pageShell('Request status', 'Missing token.', `<div class="empty">This page needs a valid request token.</div>`);
+        return;
+      }
+      const data = await api(`/api/request/status?token=${encodeURIComponent(token)}`);
+      const requests = (data.requests || []).slice().sort((a, b) => {
+        const order = { pending: 0, working: 1, done: 2, cancelled: 3 };
+        return (order[a.status] ?? 9) - (order[b.status] ?? 9) || (a.created_at - b.created_at);
+      });
+      const rows = requests.map(r => `
+        <div class="card">
+          <div class="row">
+            <h4 style="margin:0">#${esc(r.id)} • <span class="${statusClass(r.status)}">${esc(r.status)}</span></h4>
+            <div class="pill">Group ${esc(r.group_id)}</div>
+          </div>
+          <div class="spacer"></div>
+          <p><b>Request:</b> ${esc(r.text || '')}</p>
+          ${r.note ? `<div class="spacer"></div><p><b>Admin note:</b> ${esc(r.note)}</p>` : ''}
+        </div>
+      `).join('');
+
+      pageShell('My request status', 'Pending requests are kept on top, just like a leaderboard.', `
+        ${rows || '<div class="empty">No requests yet.</div>'}
+      `);
+    }
+
+    async function updateRequest(reqId, action, note, cardEl) {
+      const form = new FormData();
+      form.append('token', token);
+      form.append('action', action);
+      form.append('note', note || '');
+      const res = await fetch(`/api/request/${reqId}/update`, { method: 'POST', body: form });
+      if (!res.ok) throw new Error('Update failed');
+      if (action === 'done' || action === 'cancel') {
+        cardEl?.remove();
+      } else {
+        loadAdmin();
+      }
+    }
+
+    async function loadAdmin() {
+      if (!token) {
+        pageShell('Admin dashboard', 'Missing token.', `<div class="empty">This page needs a valid admin token.</div>`);
+        return;
+      }
+      const data = await api(`/api/request/dashboard?token=${encodeURIComponent(token)}`);
+      const pending = (data.requests || []).filter(r => ['pending', 'working'].includes(String(r.status || '').toLowerCase()));
+      const rows = pending.map(r => `
+        <div class="card admin-card" data-req="${esc(r.id)}">
+          <div class="row">
+            <h4 style="margin:0">#${esc(r.id)} • ${esc(r.full_name || 'Unknown')}</h4>
+            <div class="pill ${statusClass(r.status)}">${esc(r.status)}</div>
+          </div>
+          <div class="spacer"></div>
+          <p><b>Request:</b> ${esc(r.text || '')}</p>
+          <div class="spacer"></div>
+          <input class="input note" placeholder="This message will be sent to member" value="${esc(r.note || '')}">
+          <div class="spacer"></div>
+          <div class="row">
+            <button class="btn secondary" data-action="working">🛠 Working</button>
+            <button class="btn" data-action="done">✅ Done</button>
+            <button class="btn danger" data-action="cancel">❌ Cancel</button>
+          </div>
+        </div>
+      `).join('');
+
+      pageShell('Request dashboard', 'Actions update Telegram members instantly, and completed items disappear from this view.', `
+        ${rows || '<div class="empty">No active requests right now.</div>'}
+      `);
+
+      document.querySelectorAll('.admin-card').forEach(card => {
+        const reqId = card.dataset.req;
+        const note = card.querySelector('.note');
+        card.querySelectorAll('[data-action]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            try {
+              await updateRequest(reqId, btn.dataset.action, note.value, card);
+              showToast('Updated');
+            } catch (e) {
+              showToast(e.message || 'Could not update');
+            } finally {
+              btn.disabled = false;
+            }
+          });
+        });
+      });
+    }
+
+    async function loadRoute() {
+      document.getElementById('backBtn').style.display = page === 'games' ? 'none' : 'inline-flex';
+      if (page === 'game') return loadGame();
+      if (page === 'status') return loadStatus();
+      if (page === 'admin') return loadAdmin();
+      return loadHome();
+    }
+
+    // expose functions for inline handlers
+    window.removeFriend = removeFriend;
+    window.sendFriendRequest = sendFriendRequest;
+    window.loadAdmin = loadAdmin;
+    window.loadGame = loadGame;
+    window.loadHome = loadHome;
+
+    loadRoute().catch(err => {
+      console.error(err);
+      appView.innerHTML = `<div class="card"><h4>Something went wrong</h4><p>${esc(err.message || err)}</p></div>`;
+    });
+  </script>
+</body>
+</html>
