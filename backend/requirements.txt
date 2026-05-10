@@ -1,5 +1,0 @@
-fastapi
-uvicorn
-aiogram
-motor
-redis
