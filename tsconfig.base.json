@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "noUncheckedIndexedAccess": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@tg/shared": ["packages/shared/src"],
+      "@/components/*": ["apps/web/components/*"],
+      "@/lib/*": ["apps/web/lib/*"],
+      "@/app/*": ["apps/web/app/*"],
+      "@api/*": ["apps/api/src/*"]
+    }
+  }
+}

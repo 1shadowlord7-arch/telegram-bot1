@@ -1,1 +1,8 @@
-services: []
+services:
+  - type: web
+    name: telegram-mini-games-api
+    env: node
+    plan: starter
+    rootDir: apps/api
+    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
