@@ -1,1 +1,0 @@
-export default function Home(){return <h1>Telegram Mini App</h1>}
