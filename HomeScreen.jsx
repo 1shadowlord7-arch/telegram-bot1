@@ -49,7 +49,12 @@ export default function HomeScreen({ onNavigate }) {
         <div className="flex items-center gap-3">
           <Avatar className="h-11 w-11 ring-2 ring-primary/40">
             <AvatarFallback className="grad-primary text-primary-foreground font-semibold">
-              {user ? user.displayName.split(' ').map((p) => p[0]).join('') : 'NP'}
+              {user
+                ? user.displayName
+                    .split(' ')
+                    .map((p) => p[0])
+                    .join('')
+                : 'NP'}
             </AvatarFallback>
           </Avatar>
 
@@ -131,7 +136,7 @@ export default function HomeScreen({ onNavigate }) {
                 Season Pass – Vol 1
               </p>
               <p className="text-xs text-primary-foreground/80">
-                Unlock exclusive rewards & skins
+                Unlock exclusive rewards &amp; skins
               </p>
             </div>
 
